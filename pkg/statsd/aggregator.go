@@ -39,7 +39,7 @@ func NewMetricAggregator(percentThresholds []float64, expiryInterval time.Durati
 		expiryInterval:    expiryInterval,
 		percentThresholds: make(map[float64]percentStruct, len(percentThresholds)),
 		now:               time.Now,
-		statser:           stats.NewNullStatser(), // Will probably be replaced via RunMetrics
+		statser:           stats.NewNullStatser(), // Will probably be replaced via RunMetricsContext
 		metricMap:         gostatsd.NewMetricMap(),
 		disabledSubtypes:  disabled,
 	}

@@ -15,8 +15,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/atlassian/gostatsd"
 	"github.com/atlassian/gostatsd/pkg/stats"
+
+	"github.com/atlassian/gostatsd"
 	"github.com/atlassian/gostatsd/pkg/transport"
 	"github.com/atlassian/gostatsd/pkg/util"
 
@@ -167,7 +168,7 @@ func (n *Client) SendMetricsAsync(ctx context.Context, metrics *gostatsd.MetricM
 	}()
 }
 
-// RunMetrics run metrics
+// RunMetricsContext run metrics
 func (n *Client) RunMetrics(ctx context.Context, statser stats.Statser) {
 	statser = statser.WithTags(gostatsd.Tags{"backend:newrelic"})
 

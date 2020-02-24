@@ -85,7 +85,7 @@ func (bh *BackendHandler) RunMetricsContext(ctx context.Context) {
 	bh.RunMetrics(ctx, stats.FromContext(ctx))
 }
 
-// RunMetrics attaches a Statser to the BackendHandler.  Stops when the context is closed.
+// RunMetricsContext attaches a Statser to the BackendHandler.  Stops when the context is closed.
 func (bh *BackendHandler) RunMetrics(ctx context.Context, statser stats.Statser) {
 	var wg wait.Group
 	defer wg.Wait()
