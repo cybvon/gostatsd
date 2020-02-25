@@ -108,6 +108,7 @@ func constructServer(v *viper.Viper) (*statsd.Server, []gostatsd.Runnable, error
 		if err != nil {
 			return nil, nil, err
 		}
+		runnables = gostatsd.MaybeAppendRunnable(runnables, cloudProvider)
 		selfIPtmp, err := cloudProvider.SelfIP()
 		if err != nil {
 			logger.Warnf("Failed to get self ip: %v", err)
@@ -115,7 +116,6 @@ func constructServer(v *viper.Viper) (*statsd.Server, []gostatsd.Runnable, error
 			selfIP = selfIPtmp
 		}
 
-		runnables = gostatsd.MaybeAppendRunnable(runnables, cloudProvider)
 		cachedInstances, err = cachedinstances.NewCachedInstancesFromViper(logger, cloudProvider, v)
 		if err != nil {
 			return nil, nil, err
