@@ -7,31 +7,16 @@ import (
 
 	"github.com/ash2k/stager/wait"
 	"github.com/atlassian/gostatsd"
+	"github.com/atlassian/gostatsd/pkg/cloudproviders/fakeprovider"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/time/rate"
 )
 
-func TestCloudHandlerExpirationAndRefresh(t *testing.T) {
+func TestCachedCloudProviderExpirationAndRefresh(t *testing.T) {
 	// These still use a real clock, which means they're more susceptible to
 	// CPU load triggering a race condition, therefore there's no t.Parallel()
-	t.Run("4.3.2.1", func(t *testing.T) {
-		testExpireAndRefresh(t, "4.3.2.1", func(h *CloudHandler) {
-			e := se1()
-			h.DispatchEvent(context.Background(), &e)
-		})
-	})
-	t.Run("1.2.3.4", func(t *testing.T) {
-		testExpireAndRefresh(t, "1.2.3.4", func(h *CloudHandler) {
-			m := sm1()
-			h.DispatchMetrics(context.Background(), []*gostatsd.Metric{&m})
-		})
-	})
-}
-
-func testExpireAndRefresh(t *testing.T, expectedIp gostatsd.IP, f func(*CloudHandler)) {
-	fp := &fakeProviderIP{}
-	counting := &countingHandler{}
+	fp := &fakeprovider.IP{}
 	/*
 		Note: lookup reads in to a batch for up to 10ms
 
@@ -51,18 +36,19 @@ func testExpireAndRefresh(t *testing.T, expectedIp gostatsd.IP, f func(*CloudHan
 		T+66: refresh loop, entry is expired
 		T+70: sleep completes
 	*/
-	ci := cloudprovider.NewCachedCloudProvider(logrus.StandardLogger(), rate.NewLimiter(100, 120), fp, gostatsd.CacheOptions{
+	ci := NewCachedCloudProvider(logrus.StandardLogger(), rate.NewLimiter(100, 120), fp, gostatsd.CacheOptions{
 		CacheRefreshPeriod:        11 * time.Millisecond,
 		CacheEvictAfterIdlePeriod: 50 * time.Millisecond,
 		CacheTTL:                  10 * time.Millisecond,
 		CacheNegativeTTL:          100 * time.Millisecond,
 	})
-	ch := NewCloudHandler(ci, counting)
 	var wg wait.Group
 	defer wg.Wait()
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
-	wg.StartWithContext(ctx, ch.Run)
+	wg.StartWithContext(ctx, ci.Run)
+	const ip gostatsd.IP = "1.2.3.4"
+	ci.Peek(ip)
 	f(ch)
 	time.Sleep(70 * time.Millisecond) // Should be refreshed couple of times and evicted.
 

@@ -168,7 +168,7 @@ func (n *Client) SendMetricsAsync(ctx context.Context, metrics *gostatsd.MetricM
 	}()
 }
 
-// RunMetricsContext run metrics
+// RunMetrics run metrics
 func (n *Client) RunMetrics(ctx context.Context, statser stats.Statser) {
 	statser = statser.WithTags(gostatsd.Tags{"backend:newrelic"})
 

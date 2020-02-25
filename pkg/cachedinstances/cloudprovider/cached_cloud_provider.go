@@ -6,10 +6,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/atlassian/gostatsd/pkg/stats"
-
 	"github.com/ash2k/stager/wait"
 	"github.com/atlassian/gostatsd"
+	"github.com/atlassian/gostatsd/pkg/stats"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 )
@@ -116,12 +115,8 @@ func (ch *CachedCloudProvider) Run(ctx context.Context) {
 }
 
 func (ch *CachedCloudProvider) Peek(ip gostatsd.IP) (*gostatsd.Instance, bool /*is a cache hit*/) {
-	var (
-		holder        *instanceHolder
-		existsInCache bool
-	)
 	ch.rw.RLock()
-	holder, existsInCache = ch.cache[ip]
+	holder, existsInCache := ch.cache[ip]
 	ch.rw.RUnlock()
 	if !existsInCache {
 		return nil, false
